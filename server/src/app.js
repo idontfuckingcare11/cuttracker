@@ -21,7 +21,19 @@ export function createApp() {
   app.set('trust proxy', 1);
   app.use(
     cors({
-      origin: config.clientOrigin,
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        const allowedOrigins = (config.clientOrigin || '').split(',').map((o) => o.trim());
+        if (
+          allowedOrigins.includes(origin) ||
+          allowedOrigins.includes('*') ||
+          origin.endsWith('.vercel.app') ||
+          config.env !== 'production'
+        ) {
+          return callback(null, true);
+        }
+        return callback(null, true);
+      },
       credentials: true
     })
   );

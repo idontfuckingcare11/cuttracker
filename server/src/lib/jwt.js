@@ -16,15 +16,22 @@ export function verifyToken(token) {
 }
 
 export function setAuthCookie(res, token) {
+  const isCrossSite = config.isProd || config.cookie.secure;
   res.cookie(config.cookie.name, token, {
     httpOnly: true,
-    secure: config.cookie.secure,
-    sameSite: 'lax',
+    secure: isCrossSite ? true : config.cookie.secure,
+    sameSite: isCrossSite ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/'
   });
 }
 
 export function clearAuthCookie(res) {
-  res.clearCookie(config.cookie.name, { httpOnly: true, secure: config.cookie.secure, sameSite: 'lax', path: '/' });
+  const isCrossSite = config.isProd || config.cookie.secure;
+  res.clearCookie(config.cookie.name, {
+    httpOnly: true,
+    secure: isCrossSite ? true : config.cookie.secure,
+    sameSite: isCrossSite ? 'none' : 'lax',
+    path: '/'
+  });
 }
