@@ -16,7 +16,7 @@ export const config = {
   env: process.env.NODE_ENV || 'development',
   isProd: process.env.NODE_ENV === 'production',
   port: int(process.env.PORT, 4000),
-  clientOrigin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
+  clientOrigin: process.env.CLIENT_ORIGIN || 'https://cuttracker-client.vercel.app',
   storageEngine: (process.env.STORAGE_ENGINE || 'memory').toLowerCase(),
   dataFile: process.env.DATA_FILE || '',
   db: {

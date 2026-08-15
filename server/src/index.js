@@ -12,8 +12,8 @@ async function main() {
   }
 
   const app = createApp();
-  const server = app.listen(config.port, () => {
-    console.log(`[cut-track] API running on http://localhost:${config.port} (engine: ${config.storageEngine})`);
+  const server = app.listen(config.port, '0.0.0.0', () => {
+    console.log(`[cut-track] API running on http://0.0.0.0:${config.port} (engine: ${config.storageEngine})`);
   });
 
   server.on('error', (err) => {
