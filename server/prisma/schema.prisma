@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum MealType {
+  breakfast
+  lunch
+  dinner
+  snack
+}
+
+enum CutStatus {
+  on_track
+  too_slow
+  too_fast
+}
+
+model User {
+  id                 Int                  @id @default(autoincrement())
+  email              String               @unique @db.VarChar(255)
+  passwordHash       String               @map("password_hash") @db.VarChar(255)
+  tokenVersion       Int                  @default(0) @map("token_version")
+  createdAt          DateTime             @default(now()) @map("created_at")
+  profile            Profile?
+  foods              Food[]
+  foodEntries        FoodEntry[]
+  weightEntries      WeightEntry[]
+  workouts           Workout[]
+  aiAnalysisCache    AiAnalysisCache?
+  passwordResetTokens PasswordResetToken[]
+
+  @@map("users")
+}
+
+model Profile {
+  id                 Int      @id @default(autoincrement())
+  userId             Int      @unique @map("user_id")
+  age                Int
+  sex                String   @db.VarChar(10)
+  heightCm           Decimal  @map("height_cm") @db.Decimal(5, 2)
+  currentWeightKg    Decimal  @map("current_weight_kg") @db.Decimal(5, 2)
+  goalWeightKg       Decimal  @map("goal_weight_kg") @db.Decimal(5, 2)
+  activityLevel      String   @map("activity_level") @db.VarChar(20)
+  trainingFrequency  Int      @map("training_frequency")
+  weeklyLossRateKg   Decimal  @map("weekly_loss_rate_kg") @db.Decimal(4, 2)
+  dailyCalorieTarget Int      @map("daily_calorie_target")
+  proteinTargetG     Int      @map("protein_target_g")
+  carbTargetG        Int      @map("carb_target_g")
+  fatTargetG         Int      @map("fat_target_g")
+  createdAt          DateTime @default(now()) @map("created_at")
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model Food {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(150)
+  servingSize String   @map("serving_size") @db.VarChar(100)
+  calories    Int
+  proteinG    Decimal  @map("protein_g") @db.Decimal(6, 2)
+  carbsG      Decimal  @map("carbs_g") @db.Decimal(6, 2)
+  fatG        Decimal  @map("fat_g") @db.Decimal(6, 2)
+  createdBy   Int?     @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  creator     User?        @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  entries     FoodEntry[]
+
+  @@index([createdBy])
+  @@map("foods")
+}
+
+model FoodEntry {
+  id          Int       @id @default(autoincrement())
+  userId      Int       @map("user_id")
+  foodId      Int?      @map("food_id")
+  name        String    @db.VarChar(150)
+  servingSize String    @map("serving_size") @db.VarChar(100)
+  calories    Int
+  proteinG    Decimal   @map("protein_g") @db.Decimal(6, 2)
+  carbsG      Decimal   @map("carbs_g") @db.Decimal(6, 2)
+  fatG        Decimal   @map("fat_g") @db.Decimal(6, 2)
+  mealType    MealType  @map("meal_type")
+  quantity    Decimal   @default(1) @db.Decimal(6, 2)
+  loggedDate  DateTime  @map("logged_date") @db.Date
+  createdAt   DateTime  @default(now()) @map("created_at")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  food        Food?     @relation(fields: [foodId], references: [id], onDelete: SetNull)
+
+  @@index([userId, loggedDate])
+  @@index([loggedDate])
+  @@map("food_entries")
+}
+
+model WeightEntry {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  weightKg   Decimal  @map("weight_kg") @db.Decimal(5, 2)
+  note       String?  @db.VarChar(255)
+  loggedDate DateTime @map("logged_date") @db.Date
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, loggedDate])
+  @@map("weight_entries")
+}
+
+model Workout {
+  id              Int                @id @default(autoincrement())
+  userId          Int                @map("user_id")
+  name            String             @db.VarChar(150)
+  workoutDate     DateTime           @map("workout_date") @db.Date
+  durationMinutes Int?               @map("duration_minutes")
+  caloriesBurned  Int?               @map("calories_burned")
+  notes           String?            @db.VarChar(255)
+  createdAt       DateTime           @default(now()) @map("created_at")
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercises       WorkoutExercise[]
+
+  @@index([userId, workoutDate])
+  @@map("workouts")
+}
+
+model WorkoutExercise {
+  id            Int      @id @default(autoincrement())
+  workoutId     Int      @map("workout_id")
+  exerciseName  String   @map("exercise_name") @db.VarChar(150)
+  sets          Int
+  reps          Int
+  weightKg      Decimal  @map("weight_kg") @db.Decimal(6, 2)
+  restSeconds   Int?     @map("rest_seconds")
+  notes         String?  @db.VarChar(255)
+  isPr          Boolean  @default(false) @map("is_pr")
+  createdAt     DateTime @default(now()) @map("created_at")
+  workout       Workout  @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+
+  @@index([workoutId])
+  @@map("workout_exercises")
+}
+
+model AiAnalysisCache {
+  id          Int       @id @default(autoincrement())
+  userId      Int       @unique @map("user_id")
+  status      CutStatus
+  message     String    @db.VarChar(1000)
+  generatedAt DateTime  @map("generated_at")
+  expiresAt   DateTime  @map("expires_at")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ai_analysis_cache")
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique @db.VarChar(255)
+  userId    Int      @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
+}
