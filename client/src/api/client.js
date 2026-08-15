@@ -28,7 +28,7 @@ async function parseResponse(response) {
 
 export function api(path, options = {}) {
   const { headers, ...rest } = options;
-  const base = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://cuttracker-ozsq.onrender.com' : '');
+  const base = import.meta.env.VITE_API_URL ?? '';
   return fetch(`${base}/api${path}`, {
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...headers },
