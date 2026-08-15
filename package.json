@@ -13,7 +13,7 @@
     "dev:client": "npm run dev -w client",
     "start": "node server/src/index.js",
     "start:server": "npm run start -w server",
-    "build": "npm run build -w client && node -e \"const fs=require('fs'); if (fs.existsSync('dist')) { fs.cpSync('dist', 'public', {recursive:true}); fs.cpSync('dist', 'client/dist', {recursive:true}); }\"",
+    "build": "npm run build -w client && node -e \"const fs=require('fs'); const src=fs.existsSync('client/dist')?'client/dist':(fs.existsSync('dist')?'dist':null); if(src){ fs.cpSync(src,'public',{recursive:true}); fs.cpSync(src,'dist',{recursive:true}); fs.cpSync(src,'client/dist',{recursive:true}); }\"",
     "test": "npm run test -w server",
     "seed": "npm run seed -w server",
     "db:migrate": "npm run db:migrate -w server"
