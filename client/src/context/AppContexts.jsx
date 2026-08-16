@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { apiGet, apiPost } from '../api/client.js';
 
 const ThemeContext = createContext(null);
@@ -27,6 +28,7 @@ export function useTheme() {
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -51,6 +53,7 @@ export function AuthProvider({ children }) {
         });
     load();
     const onUnauthorized = () => {
+      queryClient.clear();
       setUser(null);
       setNeedsOnboarding(false);
     };
@@ -59,30 +62,33 @@ export function AuthProvider({ children }) {
       active = false;
       window.removeEventListener('auth:unauthorized', onUnauthorized);
     };
-  }, []);
+  }, [queryClient]);
 
   const login = useCallback(async (email, password) => {
+    queryClient.clear();
     const data = await apiPost('/auth/login', { email, password });
     setUser(data.user);
     setNeedsOnboarding(data.needsOnboarding);
     return data;
-  }, []);
+  }, [queryClient]);
 
   const register = useCallback(async (email, password) => {
+    queryClient.clear();
     const data = await apiPost('/auth/register', { email, password });
     setUser(data.user);
     setNeedsOnboarding(data.needsOnboarding);
     return data;
-  }, []);
+  }, [queryClient]);
 
   const logout = useCallback(async () => {
     try {
       await apiPost('/auth/logout');
     } finally {
+      queryClient.clear();
       setUser(null);
       setNeedsOnboarding(false);
     }
-  }, []);
+  }, [queryClient]);
 
   const refresh = useCallback(async () => {
     try {
@@ -90,10 +96,11 @@ export function AuthProvider({ children }) {
       setUser(data.user);
       setNeedsOnboarding(data.needsOnboarding);
     } catch {
+      queryClient.clear();
       setUser(null);
       setNeedsOnboarding(false);
     }
-  }, []);
+  }, [queryClient]);
 
   return (
     <AuthContext.Provider value={{ user, needsOnboarding, loading, login, register, logout, refresh }}>
