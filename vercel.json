@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build -w client && node -e \"const fs=require('fs'); const src=fs.existsSync('client/dist')?'client/dist':(fs.existsSync('dist')?'dist':null); if(src){ ['public','dist','client/dist'].forEach(d=>{ if(d!==src) fs.cpSync(src,d,{recursive:true}); }); }\"",
+  "buildCommand": "npm run build -w client && cp -r client/dist dist",
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "https://cuttracker-ozsg.onrender.com/api/$1" },
