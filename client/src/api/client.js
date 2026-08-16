@@ -26,14 +26,35 @@ async function parseResponse(response) {
   return data;
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export function api(path, options = {}) {
-  const { headers, ...rest } = options;
+  const { headers, retries = 1, ...rest } = options;
   const base = import.meta.env.VITE_API_URL ?? '';
-  return fetch(`${base}/api${path}`, {
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...headers },
-    ...rest
-  }).then(parseResponse);
+
+  async function attempt(retriesLeft) {
+    try {
+      const response = await fetch(`${base}/api${path}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', ...headers },
+        ...rest
+      });
+      return await parseResponse(response);
+    } catch (err) {
+      // Only retry on network failures (server unreachable/cold start),
+      // not on actual API errors (4xx/5xx already handled above)
+      const isNetworkError = err instanceof TypeError;
+      if (isNetworkError && retriesLeft > 0) {
+        await sleep(3000);
+        return attempt(retriesLeft - 1);
+      }
+      throw err;
+    }
+  }
+
+  return attempt(retries);
 }
 
 export function apiGet(path) {
