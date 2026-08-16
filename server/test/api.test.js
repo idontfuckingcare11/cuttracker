@@ -244,6 +244,16 @@ describe('weight entries', () => {
     expect(res.body.stats.current).toBe(71.6);
     expect(res.body.stats.remaining).toBe(6.6);
     expect(res.body.series).toHaveLength(4);
+    expect(res.body.series[0].id).toBeTruthy();
+
+    // Delete an entry using id from series
+    const entryToDelete = res.body.series[0];
+    const delRes = await request(app).delete(`/api/weight-entries/${entryToDelete.id}`).set('Cookie', cookie);
+    expect(delRes.status).toBe(200);
+
+    // Verify series length is reduced
+    const afterDel = await request(app).get('/api/weight-entries/stats').set('Cookie', cookie);
+    expect(afterDel.body.series).toHaveLength(3);
   });
 });
 

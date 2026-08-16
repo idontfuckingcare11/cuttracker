@@ -47,7 +47,7 @@ export function rollingAverageSeries(entries) {
   for (const entry of sorted) {
     const from = shiftDays(entry.loggedDate, -6);
     const values = sorted.filter((e) => e.loggedDate >= from && e.loggedDate <= entry.loggedDate).map((e) => Number(e.weightKg));
-    out.push({ loggedDate: entry.loggedDate, weightKg: Number(entry.weightKg), avg7: average(values) });
+    out.push({ id: entry.id, loggedDate: entry.loggedDate, weightKg: Number(entry.weightKg), avg7: average(values) });
   }
   return out;
 }
@@ -106,6 +106,7 @@ export function estimateWeeksToGoal(currentAvg, goalWeightKg, ratePerWeek) {
 
 export function buildWeightSeriesForChart(entries) {
   return rollingAverageSeries(entries).map((e) => ({
+    id: e.id,
     date: e.loggedDate,
     weight: Number(e.weightKg.toFixed(2)),
     avg7: Number(e.avg7.toFixed(2))
