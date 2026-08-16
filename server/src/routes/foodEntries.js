@@ -34,7 +34,12 @@ function computeTotals(entries) {
 
 router.get('/', requireAuth, async (req, res, next) => {
   try {
-    const date = isValidDateKey(req.query.date) ? req.query.date : todayKey();
+    const clientHeader = req.headers['x-client-date'];
+    const date = isValidDateKey(req.query.date)
+      ? req.query.date
+      : clientHeader && isValidDateKey(clientHeader)
+        ? clientHeader
+        : todayKey();
     const entries = await getStore().entryListByDate(req.userId, date);
     const { totals, meals } = computeTotals(entries);
     res.json({ date, entries, totals, meals });

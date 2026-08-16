@@ -9,6 +9,8 @@ import { EmptyState } from '../components/ui/EmptyState.jsx';
 import { WorkoutForm, WorkoutCard } from '../components/workout/WorkoutComponents.jsx';
 import { AIWorkoutGeneratorModal } from '../components/workout/AIWorkoutGeneratorModal.jsx';
 
+import { todayKey } from '../lib/format.js';
+
 export default function Workout() {
   const [modalOpen, setModalOpen] = useState(false);
   const [aiModalOpen, setAiModalOpen] = useState(false);
@@ -33,7 +35,7 @@ export default function Workout() {
   const handleImportWorkout = (imported) => {
     setEditing({
       name: imported.name,
-      workoutDate: new Date().toISOString().slice(0, 10),
+      workoutDate: todayKey(),
       durationMinutes: imported.durationMinutes,
       caloriesBurned: imported.caloriesBurned,
       notes: imported.notes,
@@ -43,7 +45,7 @@ export default function Workout() {
   };
 
   const prCount = workouts.reduce((sum, w) => sum + w.exercises.filter((e) => e.isPr).length, 0);
-  const thisMonth = workouts.filter((w) => w.workoutDate.slice(0, 7) === new Date().toISOString().slice(0, 7)).length;
+  const thisMonth = workouts.filter((w) => w.workoutDate.slice(0, 7) === todayKey().slice(0, 7)).length;
 
   return (
     <div className="space-y-6">

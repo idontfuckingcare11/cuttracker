@@ -53,8 +53,8 @@ function buildNotifications({ consumed, targets, insight, weights }) {
   return notes;
 }
 
-export async function buildDashboardData({ store, userId, profile }) {
-  const today = todayKey();
+export async function buildDashboardData({ store, userId, profile, date }) {
+  const today = date || todayKey();
   const entries = await store.entryListByDate(userId, today);
   const weights = await store.weightList(userId);
   const workouts = await store.workoutList(userId);

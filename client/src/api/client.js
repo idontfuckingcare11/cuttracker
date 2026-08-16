@@ -31,11 +31,27 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function getClientDate() {
+  try {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  } catch {
+    return '';
+  }
+}
+
 export function api(path, options = {}) {
   const { headers, retries = 1, ...rest } = options;
   const base = import.meta.env.VITE_API_URL || 'https://cuttracker-ozsg.onrender.com';
   const savedToken = typeof window !== 'undefined' ? localStorage.getItem('cuttrack_token') : null;
-  const authHeaders = savedToken ? { Authorization: `Bearer ${savedToken}` } : {};
+  const clientDate = getClientDate();
+  const authHeaders = {
+    ...(savedToken ? { Authorization: `Bearer ${savedToken}` } : {}),
+    ...(clientDate ? { 'x-client-date': clientDate } : {})
+  };
 
   async function attempt(retriesLeft) {
     try {

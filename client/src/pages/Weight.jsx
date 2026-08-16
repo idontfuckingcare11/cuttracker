@@ -12,7 +12,7 @@ import { StatCard } from '../components/ui/StatCard.jsx';
 import { Loading } from '../components/ui/Loading.jsx';
 import { WeightChart } from '../components/weight/WeightChart.jsx';
 import { EmptyState } from '../components/ui/EmptyState.jsx';
-import { fmtDate } from '../lib/format.js';
+import { fmtDate, todayKey } from '../lib/format.js';
 
 const schema = z.object({
   weightKg: z.number().positive('Enter your weight').max(400),
@@ -41,7 +41,7 @@ export default function Weight() {
   };
 
   const addMutation = useMutation({
-    mutationFn: (values) => apiPost('/weight-entries', { ...values, loggedDate: new Date().toISOString().slice(0, 10) }),
+    mutationFn: (values) => apiPost('/weight-entries', { ...values, loggedDate: todayKey() }),
     onSuccess: () => {
       invalidate();
       reset();

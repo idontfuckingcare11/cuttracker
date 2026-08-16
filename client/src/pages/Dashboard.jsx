@@ -11,7 +11,7 @@ import { Badge } from '../components/ui/Badge.jsx';
 import { Alert } from '../components/ui/Alert.jsx';
 import { Loading } from '../components/ui/Loading.jsx';
 import { Button } from '../components/ui/Button.jsx';
-import { fmtNum, fmtDay } from '../lib/format.js';
+import { fmtNum, fmtDay, todayKey } from '../lib/format.js';
 
 function greeting() {
   const h = new Date().getHours();
@@ -29,7 +29,14 @@ const STATUS_LABEL = {
 const NOTIF_TONE = { info: 'info', warning: 'warning', success: 'success' };
 
 export default function Dashboard() {
-  const { data, isLoading, isError, refetch } = useQuery({ queryKey: ['dashboard'], queryFn: () => apiGet('/dashboard') });
+  const today = todayKey();
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['dashboard', today],
+    queryFn: () => apiGet(`/dashboard?date=${today}`),
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
+    staleTime: 0
+  });
 
   if (isLoading) return <Loading label="Loading your dashboard…" />;
   if (isError || !data) {
