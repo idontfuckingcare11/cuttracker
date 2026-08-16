@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Plus } from 'lucide-react';
 import clsx from 'clsx';
 
 const MEAL_ICONS = {
@@ -9,7 +9,7 @@ const MEAL_ICONS = {
   extra: '🍌'
 };
 
-export function MealSection({ mealType, entries, subtotal, onEdit, onDelete }) {
+export function MealSection({ mealType, entries, subtotal, onEdit, onDelete, onAddMeal }) {
   return (
     <section className="card-base overflow-hidden">
       <header className="flex items-center justify-between border-b border-neutral-100 px-4 py-3 dark:border-neutral-800">
@@ -17,7 +17,18 @@ export function MealSection({ mealType, entries, subtotal, onEdit, onDelete }) {
           <span className="text-base leading-none">{MEAL_ICONS[mealType]}</span>
           <h3 className="text-sm font-bold capitalize text-ink dark:text-neutral-100">{mealType}</h3>
         </div>
-        <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{Math.round(subtotal.calories)} kcal</span>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{Math.round(subtotal.calories)} kcal</span>
+          <button
+            type="button"
+            onClick={() => onAddMeal && onAddMeal(mealType)}
+            className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-100 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 transition"
+            title={`Add food to ${mealType}`}
+          >
+            <Plus size={13} />
+            <span>Add</span>
+          </button>
+        </div>
       </header>
       {entries.length === 0 ? (
         <p className="px-4 py-4 text-xs text-neutral-400 dark:text-neutral-600">Nothing logged.</p>

@@ -18,6 +18,7 @@ export default function Food() {
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [selectedMealType, setSelectedMealType] = useState('breakfast');
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -53,8 +54,15 @@ export default function Food() {
   const fatTarget = profile?.fatTargetG || 60;
   const calTarget = profile?.dailyCalorieTarget || 2000;
 
+  const handleOpenAddModal = (mealType = 'breakfast') => {
+    setEditing(null);
+    setSelectedMealType(mealType);
+    setModalOpen(true);
+  };
+
   const startEdit = (entry) => {
     setEditing(entry);
+    setSelectedMealType(entry.mealType || 'breakfast');
     setModalOpen(true);
   };
 
@@ -65,7 +73,7 @@ export default function Food() {
           <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">Food log</p>
           <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-ink dark:text-neutral-100">What did you eat?</h1>
         </div>
-        <Button onClick={() => { setEditing(null); setModalOpen(true); }}>
+        <Button onClick={() => handleOpenAddModal('breakfast')}>
           <Plus size={15} /> Add food
         </Button>
       </div>
@@ -148,6 +156,7 @@ export default function Food() {
                   subtotal={subtotal}
                   onEdit={startEdit}
                   onDelete={(entry) => deleteMutation.mutate(entry.id)}
+                  onAddMeal={(type) => handleOpenAddModal(type)}
                 />
               );
             })}
@@ -155,7 +164,15 @@ export default function Food() {
         </>
       )}
 
-      <AddFoodEntryModal open={modalOpen} onClose={() => setModalOpen(false)} foods={foods} date={date} editing={editing} onSaved={invalidate} />
+      <AddFoodEntryModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        foods={foods}
+        date={date}
+        editing={editing}
+        defaultMealType={selectedMealType}
+        onSaved={invalidate}
+      />
     </div>
   );
 }

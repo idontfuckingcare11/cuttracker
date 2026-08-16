@@ -28,7 +28,7 @@ function round1(v) {
   return Math.round(v * 10) / 10;
 }
 
-export function AddFoodEntryModal({ open, onClose, foods, date, editing, onSaved }) {
+export function AddFoodEntryModal({ open, onClose, foods, date, editing, defaultMealType = 'breakfast', onSaved }) {
   const isEdit = !!editing;
   const [aiEstimating, setAiEstimating] = useState(false);
   const [estimationSource, setEstimationSource] = useState(null); // 'database' | 'ai' | 'heuristic' | null
@@ -68,12 +68,12 @@ export function AddFoodEntryModal({ open, onClose, foods, date, editing, onSaved
               carbsG: editing.carbsG,
               fatG: editing.fatG
             }
-          : { foodId: null, name: '', servingGrams: 100, servingSize: '100 g', mealType: 'breakfast', quantity: 1, calories: 0, proteinG: 0, carbsG: 0, fatG: 0 }
+          : { foodId: null, name: '', servingGrams: 100, servingSize: '100 g', mealType: defaultMealType || 'breakfast', quantity: 1, calories: 0, proteinG: 0, carbsG: 0, fatG: 0 }
       );
       setPer100g({ calories: 165, proteinG: 31, carbsG: 0, fatG: 3.6 });
       setEstimationSource(null);
     }
-  }, [open, editing, reset]);
+  }, [open, editing, defaultMealType, reset]);
 
   // When a preset food is selected from dropdown
   useEffect(() => {
