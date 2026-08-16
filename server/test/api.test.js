@@ -130,6 +130,23 @@ describe('auth', () => {
     const res = await request(app).post('/api/auth/reset-password').send({ token: 'does-not-exist', password: 'NewPass123!' });
     expect(res.status).toBe(400);
   });
+  it('supports authentication via Authorization Bearer token header', async () => {
+    const email = `bearer_${Date.now()}@test.com`;
+    const regRes = await request(app).post('/api/auth/register').send({ email, password: 'Password123!' });
+    expect(regRes.status).toBe(201);
+    expect(regRes.body.token).toBeTruthy();
+    const token = regRes.body.token;
+
+    const me = await request(app).get('/api/auth/me').set('Authorization', `Bearer ${token}`);
+    expect(me.status).toBe(200);
+    expect(me.body.user.email).toBe(email);
+
+    const logoutRes = await request(app).post('/api/auth/logout').set('Authorization', `Bearer ${token}`);
+    expect(logoutRes.status).toBe(200);
+
+    const staleMe = await request(app).get('/api/auth/me').set('Authorization', `Bearer ${token}`);
+    expect(staleMe.status).toBe(401);
+  });
 });
 
 describe('onboarding + profile', () => {

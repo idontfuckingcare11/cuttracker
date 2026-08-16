@@ -2,7 +2,10 @@ import { getStore } from '../lib/db/index.js';
 import { verifyToken } from '../lib/jwt.js';
 
 export async function requireAuth(req, res, next) {
-  const token = req.cookies?.cuttrack_token;
+  let token = req.cookies?.cuttrack_token;
+  if (!token && req.headers.authorization?.startsWith('Bearer ')) {
+    token = req.headers.authorization.slice(7).trim();
+  }
   if (!token) {
     return res.status(401).json({ error: 'Not authenticated' });
   }

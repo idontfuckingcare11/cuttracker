@@ -53,6 +53,7 @@ export function AuthProvider({ children }) {
         });
     load();
     const onUnauthorized = () => {
+      localStorage.removeItem('cuttrack_token');
       queryClient.clear();
       setUser(null);
       setNeedsOnboarding(false);
@@ -67,6 +68,9 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (email, password) => {
     queryClient.clear();
     const data = await apiPost('/auth/login', { email, password });
+    if (data.token) {
+      localStorage.setItem('cuttrack_token', data.token);
+    }
     setUser(data.user);
     setNeedsOnboarding(data.needsOnboarding);
     return data;
@@ -75,6 +79,9 @@ export function AuthProvider({ children }) {
   const register = useCallback(async (email, password) => {
     queryClient.clear();
     const data = await apiPost('/auth/register', { email, password });
+    if (data.token) {
+      localStorage.setItem('cuttrack_token', data.token);
+    }
     setUser(data.user);
     setNeedsOnboarding(data.needsOnboarding);
     return data;
@@ -84,6 +91,7 @@ export function AuthProvider({ children }) {
     try {
       await apiPost('/auth/logout');
     } finally {
+      localStorage.removeItem('cuttrack_token');
       queryClient.clear();
       setUser(null);
       setNeedsOnboarding(false);
@@ -96,6 +104,7 @@ export function AuthProvider({ children }) {
       setUser(data.user);
       setNeedsOnboarding(data.needsOnboarding);
     } catch {
+      localStorage.removeItem('cuttrack_token');
       queryClient.clear();
       setUser(null);
       setNeedsOnboarding(false);

@@ -19,6 +19,7 @@ async function parseResponse(response) {
     const message = data?.error || `Request failed (${response.status})`;
     const err = new ApiError(message, response.status, data?.issues);
     if (response.status === 401) {
+      localStorage.removeItem('cuttrack_token');
       window.dispatchEvent(new CustomEvent('auth:unauthorized'));
     }
     throw err;
@@ -33,12 +34,14 @@ function sleep(ms) {
 export function api(path, options = {}) {
   const { headers, retries = 1, ...rest } = options;
   const base = import.meta.env.VITE_API_URL || 'https://cuttracker-ozsg.onrender.com';
+  const savedToken = typeof window !== 'undefined' ? localStorage.getItem('cuttrack_token') : null;
+  const authHeaders = savedToken ? { Authorization: `Bearer ${savedToken}` } : {};
 
   async function attempt(retriesLeft) {
     try {
       const response = await fetch(`${base}/api${path}`, {
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json', ...headers },
+        headers: { 'Content-Type': 'application/json', ...authHeaders, ...headers },
         ...rest
       });
       return await parseResponse(response);

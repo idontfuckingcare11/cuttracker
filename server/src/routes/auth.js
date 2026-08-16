@@ -19,7 +19,7 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
     if (!user) return res.status(409).json({ error: 'An account with this email already exists.' });
     const token = signToken(user.id, user.tokenVersion ?? 0);
     setAuthCookie(res, token);
-    res.status(201).json({ user: getStore().userPublic(user), needsOnboarding: true });
+    res.status(201).json({ user: getStore().userPublic(user), needsOnboarding: true, token });
   } catch (error) {
     next(error);
   }
@@ -35,7 +35,7 @@ router.post('/login', validate(loginSchema), async (req, res, next) => {
     const token = signToken(user.id, user.tokenVersion ?? 0);
     setAuthCookie(res, token);
     const profile = await getStore().profileFindByUserId(user.id);
-    res.json({ user: getStore().userPublic(user), needsOnboarding: !profile });
+    res.json({ user: getStore().userPublic(user), needsOnboarding: !profile, token });
   } catch (error) {
     next(error);
   }
@@ -43,7 +43,10 @@ router.post('/login', validate(loginSchema), async (req, res, next) => {
 
 router.post('/logout', async (req, res, next) => {
   try {
-    const token = req.cookies?.cuttrack_token;
+    let token = req.cookies?.cuttrack_token;
+    if (!token && req.headers.authorization?.startsWith('Bearer ')) {
+      token = req.headers.authorization.slice(7).trim();
+    }
     const payload = token ? verifyToken(token) : null;
     if (payload) {
       await getStore().userBumpTokenVersion(payload.sub);
