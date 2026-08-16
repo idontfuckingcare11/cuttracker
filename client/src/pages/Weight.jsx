@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Trash2, TrendingDown, Flag } from 'lucide-react';
+import { Plus, Trash2, TrendingDown, Flag, Loader2 } from 'lucide-react';
 import { apiGet, apiPost, apiDelete } from '../api/client.js';
 import { Card, CardHeader, CardBody } from '../components/ui/Card.jsx';
 import { Input } from '../components/ui/Input.jsx';
@@ -52,7 +52,28 @@ export default function Weight() {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => apiDelete(`/weight-entries/${id}`),
-    onSuccess: invalidate
+    onMutate: async (deletedId) => {
+      await queryClient.cancelQueries({ queryKey: ['weight-stats'] });
+      const previousData = queryClient.getQueryData(['weight-stats']);
+      queryClient.setQueryData(['weight-stats'], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          series: old.series ? old.series.filter((item) => String(item.id) !== String(deletedId)) : [],
+          entries: old.entries ? old.entries.filter((item) => String(item.id) !== String(deletedId)) : []
+        };
+      });
+      return { previousData };
+    },
+    onError: (err, deletedId, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(['weight-stats'], context.previousData);
+      }
+      alert(err.message || 'Failed to delete weight entry.');
+    },
+    onSettled: () => {
+      invalidate();
+    }
   });
 
   if (isLoading) return <Loading label="Loading your weight log…" />;
@@ -68,7 +89,11 @@ export default function Weight() {
   }
 
   const s = stats?.stats;
-  const recent = stats?.series ? [...stats.series].reverse().slice(0, 10) : [];
+  const recent = stats?.entries && stats.entries.length > 0
+    ? [...stats.entries].sort((a, b) => (b.loggedDate < a.loggedDate ? 1 : b.loggedDate > a.loggedDate ? -1 : b.id - a.id)).slice(0, 10)
+    : stats?.series
+    ? [...stats.series].reverse().slice(0, 10)
+    : [];
 
   return (
     <div className="space-y-6">
@@ -117,20 +142,35 @@ export default function Weight() {
             <p className="text-sm text-neutral-400">No entries yet.</p>
           ) : (
             <ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
-              {recent.map((e) => (
-                <li key={e.id} className="flex items-center justify-between py-2.5">
-                  <div>
-                    <p className="text-sm font-bold text-ink dark:text-neutral-100">{e.weight} kg</p>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                      {fmtDate(e.date)}
-                      {e.avg7 ? ` · 7-day avg ${e.avg7} kg` : ''}
-                    </p>
-                  </div>
-                  <button onClick={() => deleteMutation.mutate(e.id)} className="rounded-lg p-2 text-neutral-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400" aria-label="Delete">
-                    <Trash2 size={15} />
-                  </button>
-                </li>
-              ))}
+              {recent.map((e, idx) => {
+                const id = e.id;
+                const weightVal = e.weightKg ?? e.weight;
+                const dateVal = e.loggedDate ?? e.date;
+                const isDeleting = deleteMutation.isPending && String(deleteMutation.variables) === String(id);
+                return (
+                  <li key={id || idx} className="flex items-center justify-between py-2.5">
+                    <div>
+                      <p className="text-sm font-bold text-ink dark:text-neutral-100">{weightVal} kg</p>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                        {fmtDate(dateVal)}
+                        {e.avg7 ? ` · 7-day avg ${e.avg7} kg` : ''}
+                        {e.note ? ` · ${e.note}` : ''}
+                      </p>
+                    </div>
+                    {id ? (
+                      <button
+                        type="button"
+                        disabled={isDeleting}
+                        onClick={() => deleteMutation.mutate(id)}
+                        className="rounded-lg p-2 text-neutral-400 hover:bg-red-50 hover:text-red-600 active:bg-red-100 dark:hover:bg-red-950/40 dark:hover:text-red-400 dark:active:bg-red-900/60 disabled:opacity-50 transition-colors"
+                        aria-label="Delete entry"
+                      >
+                        {isDeleting ? <Loader2 size={15} className="animate-spin text-red-500" /> : <Trash2 size={15} />}
+                      </button>
+                    ) : null}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </CardBody>

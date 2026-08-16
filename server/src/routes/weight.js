@@ -22,7 +22,7 @@ router.get('/stats', requireAuth, async (req, res, next) => {
     const entries = await getStore().weightList(req.userId);
     const profile = await getStore().profileFindByUserId(req.userId);
     const stats = weightStatsFromEntries(entries, profile ? profile.goalWeightKg : null);
-    res.json({ stats, series: buildWeightSeriesForChart(entries) });
+    res.json({ stats, series: buildWeightSeriesForChart(entries), entries });
   } catch (error) {
     next(error);
   }
