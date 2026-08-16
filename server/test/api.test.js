@@ -227,6 +227,18 @@ describe('food entries', () => {
     expect(customRes.status).toBe(200);
     expect(customRes.body.source).toBe('heuristic');
     expect(customRes.body.calories).toBeGreaterThan(150);
+
+    // Test drinks & beverage estimations (12 fl oz Coke / 355g equivalent)
+    const cokeRes = await request(app).post('/api/foods/estimate').set('Cookie', cookie).send({ name: 'Coca-Cola', grams: 355 });
+    expect(cokeRes.status).toBe(200);
+    expect(cokeRes.body.calories).toBe(142);
+    expect(cokeRes.body.carbsG).toBeGreaterThan(30);
+
+    // Test milk estimation (8 fl oz Whole Milk / 236.6g equivalent)
+    const milkRes = await request(app).post('/api/foods/estimate').set('Cookie', cookie).send({ name: 'Whole Milk', grams: 236.6 });
+    expect(milkRes.status).toBe(200);
+    expect(milkRes.body.calories).toBe(144);
+    expect(milkRes.body.proteinG).toBeGreaterThan(7);
   });
 });
 

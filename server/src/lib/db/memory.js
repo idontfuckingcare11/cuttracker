@@ -27,7 +27,14 @@ const GLOBAL_FOODS = [
   { name: 'Almonds', servingSize: '30 g', calories: 174, proteinG: 6, carbsG: 6, fatG: 15 },
   { name: 'Salmon fillet', servingSize: '150 g', calories: 260, proteinG: 32, carbsG: 0, fatG: 14 },
   { name: 'Cottage cheese', servingSize: '100 g', calories: 98, proteinG: 11, carbsG: 3.4, fatG: 4.3 },
-  { name: 'Brown bread', servingSize: '1 slice', calories: 90, proteinG: 4, carbsG: 16, fatG: 1 }
+  { name: 'Brown bread', servingSize: '1 slice', calories: 90, proteinG: 4, carbsG: 16, fatG: 1 },
+  { name: 'Whole Milk (3.25%)', servingSize: '8 fl oz', calories: 149, proteinG: 7.7, carbsG: 11.7, fatG: 7.9 },
+  { name: 'Orange Juice', servingSize: '8 fl oz', calories: 112, proteinG: 1.7, carbsG: 26, fatG: 0.5 },
+  { name: 'Coca-Cola / Regular Soda', servingSize: '12 fl oz', calories: 140, proteinG: 0, carbsG: 39, fatG: 0 },
+  { name: 'Coke Zero / Zero Sugar Soda', servingSize: '12 fl oz', calories: 0, proteinG: 0, carbsG: 0, fatG: 0 },
+  { name: 'Caffe Latte', servingSize: '12 fl oz', calories: 150, proteinG: 8, carbsG: 12, fatG: 6 },
+  { name: 'Iced Tea (Sweetened)', servingSize: '12 fl oz', calories: 120, proteinG: 0, carbsG: 32, fatG: 0 },
+  { name: 'Gatorade / Sports Drink', servingSize: '12 fl oz', calories: 80, proteinG: 0, carbsG: 21, fatG: 0 }
 ];
 
 const SEED_USER = {

@@ -114,7 +114,35 @@ const COMMON_FOODS_PER_100G = [
   // --- Other Filipino Canned / Packaged ---
   { name: '555 Tuna', aliases: ['555 tuna', '555 tuna flakes'], calories: 150, proteinG: 14, carbsG: 5, fatG: 8 },
   { name: 'Century Tuna Sisig', aliases: ['century tuna sisig', 'tuna sisig'], calories: 120, proteinG: 12, carbsG: 7, fatG: 5 },
-  { name: 'Wow Ulam', aliases: ['wow ulam', 'wow ulam viand'], calories: 180, proteinG: 10, carbsG: 10, fatG: 12 }
+  { name: 'Wow Ulam', aliases: ['wow ulam', 'wow ulam viand'], calories: 180, proteinG: 10, carbsG: 10, fatG: 12 },
+
+  // ═══════════════════════════════════════════════════════════
+  // DRINKS & BEVERAGES — Values per 100g / 100ml
+  // ═══════════════════════════════════════════════════════════
+  { name: 'Whole Milk (3.25%)', aliases: ['whole milk', 'milk', 'full cream milk', 'cow milk'], calories: 61, proteinG: 3.2, carbsG: 4.8, fatG: 3.3 },
+  { name: 'Skim Milk / Non-fat Milk', aliases: ['skim milk', 'nonfat milk', 'non-fat milk', 'fat free milk'], calories: 35, proteinG: 3.4, carbsG: 5, fatG: 0.1 },
+  { name: 'Low Fat Milk (2%)', aliases: ['low fat milk', '2% milk', 'reduced fat milk'], calories: 50, proteinG: 3.3, carbsG: 4.8, fatG: 2 },
+  { name: 'Almond Milk (Unsweetened)', aliases: ['almond milk', 'unsweetened almond milk'], calories: 15, proteinG: 0.5, carbsG: 0.3, fatG: 1.2 },
+  { name: 'Soy Milk', aliases: ['soy milk', 'soymilk'], calories: 43, proteinG: 3.3, carbsG: 4, fatG: 1.8 },
+  { name: 'Oat Milk', aliases: ['oat milk', 'oatmilk'], calories: 48, proteinG: 1, carbsG: 7, fatG: 1.5 },
+  { name: 'Orange Juice', aliases: ['orange juice', 'oj', 'fresh orange juice'], calories: 45, proteinG: 0.7, carbsG: 10.4, fatG: 0.2 },
+  { name: 'Apple Juice', aliases: ['apple juice'], calories: 46, proteinG: 0.1, carbsG: 11.3, fatG: 0.1 },
+  { name: 'Pineapple Juice', aliases: ['pineapple juice'], calories: 53, proteinG: 0.4, carbsG: 13, fatG: 0.1 },
+  { name: 'Lemonade / Calamansi Juice', aliases: ['lemonade', 'calamansi juice', 'calamansi'], calories: 40, proteinG: 0.1, carbsG: 10, fatG: 0 },
+  { name: 'Coca-Cola / Regular Soda', aliases: ['coca-cola', 'coke', 'pepsi', 'sprite', 'soda', 'soft drink', 'dr pepper', 'mountain dew'], calories: 40, proteinG: 0, carbsG: 10.6, fatG: 0 },
+  { name: 'Coke Zero / Diet Soda', aliases: ['coke zero', 'diet coke', 'pepsi max', 'pepsi zero', 'zero sugar soda', 'diet soda', 'sprite zero'], calories: 0, proteinG: 0, carbsG: 0, fatG: 0 },
+  { name: 'Black Coffee / Espresso', aliases: ['black coffee', 'espresso', 'brewed coffee', 'americaned', 'americano', 'cold brew'], calories: 2, proteinG: 0.1, carbsG: 0, fatG: 0 },
+  { name: 'Caffe Latte', aliases: ['latte', 'caffe latte', 'cafe latte', 'iced latte'], calories: 42, proteinG: 2.3, carbsG: 3.4, fatG: 2.1 },
+  { name: 'Cappuccino', aliases: ['cappuccino'], calories: 37, proteinG: 2.1, carbsG: 3, fatG: 1.8 },
+  { name: 'Iced Tea (Sweetened)', aliases: ['iced tea', 'sweet tea', 'nestea', 'lemon iced tea'], calories: 35, proteinG: 0, carbsG: 8.8, fatG: 0 },
+  { name: 'Unsweetened Iced Tea', aliases: ['unsweetened iced tea', 'green tea', 'black tea'], calories: 1, proteinG: 0, carbsG: 0.2, fatG: 0 },
+  { name: 'Milk Tea / Boba Tea', aliases: ['milk tea', 'boba', 'boba milk tea', 'bubble tea'], calories: 65, proteinG: 1.2, carbsG: 12, fatG: 1.5 },
+  { name: 'Matcha Latte', aliases: ['matcha latte', 'matcha'], calories: 55, proteinG: 2, carbsG: 7.5, fatG: 2 },
+  { name: 'Gatorade / Sports Drink', aliases: ['gatorade', 'powerade', 'sports drink', 'pocari sweat'], calories: 24, proteinG: 0, carbsG: 6, fatG: 0 },
+  { name: 'Red Bull / Energy Drink', aliases: ['energy drink', 'red bull', 'monster energy', 'sting'], calories: 45, proteinG: 0.3, carbsG: 11, fatG: 0 },
+  { name: 'Monster Ultra / Zero Energy Drink', aliases: ['monster ultra', 'red bull zero', 'zero energy drink'], calories: 3, proteinG: 0, carbsG: 0.5, fatG: 0 },
+  { name: 'Coconut Water', aliases: ['coconut water', 'buko water', 'buko juice'], calories: 19, proteinG: 0.7, carbsG: 3.7, fatG: 0.2 },
+  { name: 'Whey Protein Shake (with Water)', aliases: ['whey shake', 'protein drink', 'protein shake', 'whey in water'], calories: 50, proteinG: 10, carbsG: 1.2, fatG: 0.6 }
 ];
 
 
@@ -165,8 +193,18 @@ function estimateHeuristically(foodName) {
   let carbsG = 15;
   let fatG = 5;
 
-  // Detect protein base
-  if (/chicken|turkey|poultry/.test(query)) {
+  // Detect drink / liquid base
+  if (/coke zero|zero sugar|diet soda|pepsi zero|sprite zero|black coffee|espresso|americano|cold brew|unsweetened tea/.test(query)) {
+    proteinG = 0; carbsG = 0; fatG = 0;
+  } else if (/soda|coke|pepsi|sprite|dr pepper|mountain dew|gatorade|powerade|sports drink|iced tea|nestea|lemonade|calamansi|juice/.test(query)) {
+    proteinG = 0.2; carbsG = 9; fatG = 0;
+  } else if (/milk tea|boba|bubble tea|latte|cappuccino|macchiato|matcha/.test(query)) {
+    proteinG = 2; carbsG = 10; fatG = 2;
+  } else if (/milk|shake|smoothie/.test(query)) {
+    proteinG = 3.5; carbsG = 5; fatG = 2.5;
+  } else if (/coconut water|buko/.test(query)) {
+    proteinG = 0.7; carbsG = 4; fatG = 0.2;
+  } else if (/chicken|turkey|poultry/.test(query)) {
     proteinG = 24; carbsG = 2; fatG = 7;
   } else if (/pork|pig|bacon|lechon/.test(query)) {
     proteinG = 20; carbsG = 4; fatG = 18;
