@@ -32,7 +32,7 @@ function sleep(ms) {
 
 export function api(path, options = {}) {
   const { headers, retries = 1, ...rest } = options;
-  const base = import.meta.env.VITE_API_URL ?? '';
+  const base = import.meta.env.VITE_API_URL || 'https://cuttracker-ozsg.onrender.com';
 
   async function attempt(retriesLeft) {
     try {
