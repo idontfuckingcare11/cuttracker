@@ -20,22 +20,29 @@ describe('BMR (Mifflin-St Jeor)', () => {
 });
 
 describe('TDEE', () => {
-  it('applies activity multiplier', () => {
+  it('applies activity multiplier with 0 training days', () => {
     const base = bmr({ age: 27, sex: 'male', heightCm: 170, weightKg: 71.9 });
-    expect(tdee(base, 'moderate')).toBeCloseTo(base * 1.55, 5);
+    // 'moderate' baseMultiplier=1.4 + 0 training days = 1.4
+    expect(tdee(base, 'moderate', 0)).toBeCloseTo(base * 1.4, 5);
   });
-  it('maps unknown activity to sedentary', () => {
-    expect(activityMultiplier('nope')).toBe(1.2);
+  it('adds training contribution per day/week', () => {
+    const base = bmr({ age: 27, sex: 'male', heightCm: 170, weightKg: 71.9 });
+    // 'moderate' baseMultiplier=1.4 + 5 days * 0.04 = 1.6
+    expect(tdee(base, 'moderate', 5)).toBeCloseTo(base * 1.6, 5);
+  });
+  it('maps unknown activity to sedentary base (1.2)', () => {
+    expect(activityMultiplier('nope', 0)).toBe(1.2);
   });
 });
 
 describe('calorieTarget', () => {
   it('subtracts the deficit implied by weekly loss rate', () => {
-    const t = calorieTarget({ age: 27, sex: 'male', heightCm: 170, weightKg: 71.9, activityLevel: 'moderate', weeklyLossRateKg: 0.5 });
-    expect(t.dailyCalorieTarget).toBe(Math.round(1651.5 * 1.55 - (0.5 * 7700) / 7));
+    // moderate baseMultiplier=1.4 + trainingFrequency=0 days * 0.04 = 1.4 total
+    const t = calorieTarget({ age: 27, sex: 'male', heightCm: 170, weightKg: 71.9, activityLevel: 'moderate', weeklyLossRateKg: 0.5, trainingFrequency: 0 });
+    expect(t.dailyCalorieTarget).toBe(Math.round(1651.5 * 1.4 - (0.5 * 7700) / 7));
   });
   it('never goes below the 1200 floor', () => {
-    const t = calorieTarget({ age: 90, sex: 'female', heightCm: 150, weightKg: 40, activityLevel: 'sedentary', weeklyLossRateKg: 1 });
+    const t = calorieTarget({ age: 90, sex: 'female', heightCm: 150, weightKg: 40, activityLevel: 'sedentary', weeklyLossRateKg: 1, trainingFrequency: 0 });
     expect(t.dailyCalorieTarget).toBeGreaterThanOrEqual(1200);
   });
 });

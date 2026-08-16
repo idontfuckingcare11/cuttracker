@@ -1,18 +1,30 @@
 export const ACTIVITY_LEVELS = [
-  { value: 'sedentary', label: 'Sedentary (little or no exercise)', multiplier: 1.2 },
-  { value: 'light', label: 'Lightly active (1–3 days/week)', multiplier: 1.375 },
-  { value: 'moderate', label: 'Moderately active (3–5 days/week)', multiplier: 1.55 },
-  { value: 'active', label: 'Very active (6–7 days/week)', multiplier: 1.725 },
-  { value: 'very_active', label: 'Extremely active (physical job + training)', multiplier: 1.9 }
+  { value: 'sedentary', label: 'Sedentary (desk job, little movement)', baseMultiplier: 1.2 },
+  { value: 'light', label: 'Lightly active (light walks, casual movement)', baseMultiplier: 1.3 },
+  { value: 'moderate', label: 'Moderately active (3–5 days/week)', baseMultiplier: 1.4 },
+  { value: 'active', label: 'Very active (physical job or daily sport)', baseMultiplier: 1.55 },
+  { value: 'very_active', label: 'Extremely active (physical job + heavy training)', baseMultiplier: 1.7 }
 ];
 
 export const WEEKLY_LOSS_OPTIONS = [0.25, 0.5, 0.75, 1.0];
 
 export const KG_PER_KG_FAT = 7700;
 
-export function activityMultiplier(value) {
+// MET-based training contribution: ~0.04 TDEE multiplier per training day/week
+// This accounts for the actual caloric cost of structured exercise sessions
+export function trainingMultiplier(trainingFrequency) {
+  const days = Math.min(Math.max(Number(trainingFrequency) || 0, 0), 7);
+  return days * 0.04;
+}
+
+export function activityBaseMultiplier(value) {
   const level = ACTIVITY_LEVELS.find((a) => a.value === value);
-  return level ? level.multiplier : 1.2;
+  return level ? level.baseMultiplier : 1.2;
+}
+
+// Combined TDEE multiplier = lifestyle base + training contribution
+export function activityMultiplier(value, trainingFrequency = 0) {
+  return activityBaseMultiplier(value) + trainingMultiplier(trainingFrequency);
 }
 
 export function bmr({ age, sex, weightKg, heightCm }) {
@@ -20,17 +32,17 @@ export function bmr({ age, sex, weightKg, heightCm }) {
   return sex === 'female' ? base - 161 : base + 5;
 }
 
-export function tdee(bmrValue, activityValue) {
-  return bmrValue * activityMultiplier(activityValue);
+export function tdee(bmrValue, activityValue, trainingFrequency = 0) {
+  return bmrValue * activityMultiplier(activityValue, trainingFrequency);
 }
 
 export function dailyDeficitKcal(weeklyLossKg) {
   return (weeklyLossKg * KG_PER_KG_FAT) / 7;
 }
 
-export function calorieTarget({ age, sex, heightCm, weightKg, activityLevel, weeklyLossRateKg }) {
+export function calorieTarget({ age, sex, heightCm, weightKg, activityLevel, weeklyLossRateKg, trainingFrequency = 0 }) {
   const bmrValue = bmr({ age, sex, heightCm, weightKg });
-  const tdeeValue = tdee(bmrValue, activityLevel);
+  const tdeeValue = tdee(bmrValue, activityLevel, trainingFrequency);
   const target = tdeeValue - dailyDeficitKcal(weeklyLossRateKg);
   return { bmr: Math.round(bmrValue), tdee: Math.round(tdeeValue), dailyCalorieTarget: Math.max(1200, Math.round(target)) };
 }
@@ -112,12 +124,12 @@ export function calculateAll(input) {
     weeklyRate = Math.max(0.1, Math.round((diffKg / weeks) * 100) / 100);
   }
 
-  const effectiveInput = { ...input, weightKg: currentKg, weeklyLossRateKg: weeklyRate };
+  const effectiveInput = { ...input, weightKg: currentKg, weeklyLossRateKg: weeklyRate, trainingFrequency: input.trainingFrequency || 0 };
   const targets = calorieTarget(effectiveInput);
   const macros = macroTargets({
     weightKg: currentKg,
     dailyCalorieTarget: targets.dailyCalorieTarget,
-    trainingFrequency: input.trainingFrequency
+    trainingFrequency: input.trainingFrequency || 0
   });
   const deficitCheck = validateDeficit({ weightKg: currentKg, weeklyLossRateKg: weeklyRate });
   return {

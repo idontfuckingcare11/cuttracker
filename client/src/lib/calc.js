@@ -1,9 +1,9 @@
 export const ACTIVITY_LEVELS = [
-  { value: 'sedentary', label: 'Sedentary (little or no exercise)', multiplier: 1.2 },
-  { value: 'light', label: 'Lightly active (1–3 days/week)', multiplier: 1.375 },
-  { value: 'moderate', label: 'Moderately active (3–5 days/week)', multiplier: 1.55 },
-  { value: 'active', label: 'Very active (6–7 days/week)', multiplier: 1.725 },
-  { value: 'very_active', label: 'Extremely active (physical job + training)', multiplier: 1.9 }
+  { value: 'sedentary', label: 'Sedentary (desk job, little movement)', baseMultiplier: 1.2 },
+  { value: 'light', label: 'Lightly active (light walks, casual movement)', baseMultiplier: 1.3 },
+  { value: 'moderate', label: 'Moderately active (3–5 days/week)', baseMultiplier: 1.4 },
+  { value: 'active', label: 'Very active (physical job or daily sport)', baseMultiplier: 1.55 },
+  { value: 'very_active', label: 'Extremely active (physical job + heavy training)', baseMultiplier: 1.7 }
 ];
 
 export const WEEKLY_LOSS_OPTIONS = [0.25, 0.5, 0.75, 1.0];
@@ -19,9 +19,20 @@ export const TARGET_MONTH_OPTIONS = [
   { value: 12, label: '12 months (~52 weeks) — Gradual' }
 ];
 
-export function activityMultiplier(value) {
+// MET-based training contribution: ~0.04 TDEE multiplier per training day/week
+export function trainingMultiplier(trainingFrequency) {
+  const days = Math.min(Math.max(Number(trainingFrequency) || 0, 0), 7);
+  return days * 0.04;
+}
+
+export function activityBaseMultiplier(value) {
   const level = ACTIVITY_LEVELS.find((a) => a.value === value);
-  return level ? level.multiplier : 1.2;
+  return level ? level.baseMultiplier : 1.2;
+}
+
+// Combined TDEE multiplier = lifestyle base + training contribution
+export function activityMultiplier(value, trainingFrequency = 0) {
+  return activityBaseMultiplier(value) + trainingMultiplier(trainingFrequency);
 }
 
 export function bmr({ age, sex, weightKg, heightCm }) {
@@ -31,7 +42,7 @@ export function bmr({ age, sex, weightKg, heightCm }) {
 
 export function calorieTarget(input) {
   const b = bmr(input);
-  const tdee = b * activityMultiplier(input.activityLevel);
+  const tdee = b * activityMultiplier(input.activityLevel, input.trainingFrequency || 0);
   const target = tdee - (input.weeklyLossRateKg * 7700) / 7;
   return { bmr: Math.round(b), tdee: Math.round(tdee), dailyCalorieTarget: Math.max(1200, Math.round(target)) };
 }

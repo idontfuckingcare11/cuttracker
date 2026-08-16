@@ -47,7 +47,16 @@ export function ProfileFields({ register, errors }) {
       />
       <Select
         label="Training (days/week)"
-        options={[0, 1, 2, 3, 4, 5, 6, 7]}
+        options={[
+          { value: 0, label: '0 days/week (Rest / No training)' },
+          { value: 1, label: '1 day/week' },
+          { value: 2, label: '2 days/week' },
+          { value: 3, label: '3 days/week' },
+          { value: 4, label: '4 days/week' },
+          { value: 5, label: '5 days/week' },
+          { value: 6, label: '6 days/week' },
+          { value: 7, label: '7 days/week (Every day)' }
+        ]}
         error={errors.trainingFrequency?.message}
         {...register('trainingFrequency', { valueAsNumber: true })}
       />
